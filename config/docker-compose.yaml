@@ -1,0 +1,85 @@
+version: "3.8"
+
+services:
+  # Config Server Replica Set
+  configsvr:
+    image: mongo:6.0
+    container_name: configsvr
+    command: ["mongod", "--configsvr", "--replSet", "configReplSet", "--port", "27019"]
+    volumes:
+      - configsvr_data:/data/db
+    networks:
+      - mongo-cluster-net
+    ports:
+      - 27019:27019
+
+  # Shard 1
+  shard1:
+    image: mongo:6.0
+    container_name: shard1
+    command: ["mongod", "--shardsvr", "--replSet", "shard1ReplSet", "--port", "27018"]
+    volumes:
+      - shard1_data:/data/db
+    networks:
+      - mongo-cluster-net
+    ports:
+      - 27018:27018
+
+  # Shard 2
+  shard2:
+    image: mongo:6.0
+    container_name: shard2
+    command: ["mongod", "--shardsvr", "--replSet", "shard2ReplSet", "--port", "27017"]
+    volumes:
+      - shard2_data:/data/db
+    networks:
+      - mongo-cluster-net
+    ports:
+      - 27017:27017
+
+  # Shard 3
+  shard3:
+    image: mongo:6.0
+    container_name: shard3
+    command: ["mongod", "--shardsvr", "--replSet", "shard3ReplSet", "--port", "27016"]
+    volumes:
+      - shard3_data:/data/db
+    networks:
+      - mongo-cluster-net
+    ports:
+      - 27016:27016
+
+  # Shard 4
+  shard4:
+    image: mongo:6.0
+    container_name: shard4
+    command: ["mongod", "--shardsvr", "--replSet", "shard4ReplSet", "--port", "27015"]
+    volumes:
+      - shard4_data:/data/db
+    networks:
+      - mongo-cluster-net
+    ports:
+      - 27015:27015
+
+  # Mongos Router
+  mongos:
+    image: mongo:6.0
+    container_name: mongos
+    depends_on:
+      - configsvr
+    command: ["mongos", "--configdb", "configReplSet/configsvr:27019", "--port", "27020"]
+    ports:
+      - 27020:27020
+    networks:
+      - mongo-cluster-net
+
+volumes:
+  configsvr_data:
+  shard1_data:
+  shard2_data:
+  shard3_data:
+  shard4_data:
+
+networks:
+  mongo-cluster-net:
+    external: true
